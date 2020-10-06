@@ -1,0 +1,10 @@
+---
+# generate an ssh-key for the user. in my case, this is my service user for all plays.
+users: []
+#  - user: "svc_ansible"
+#    fullname: "Serviceaccount Ansible"
+#    key: "{{ lookup('file', '~/.ssh/id_rsa_ansible.pub', errors='ignore') }}"
+#    cmd: "ALL=(ALL) NOPASSWD:ALL"
+#    state: present
+#    sudo: true
+#    system_account: false

@@ -1,0 +1,61 @@
+---
+- name: install package sudo
+  package:
+    name: sudo
+    state: present
+  become: true
+  tags: users
+
+- name: manage users
+  user:
+    name: "{{ item.user }}"
+    comment: "{{ item.fullname }}"
+    shell: "{{ item.shell | default('/bin/bash') }}"
+    append: yes
+    create_home: true
+    state: "{{ item.state }}"
+    system: "{{ item.system_account |default(omit) }}"
+  with_items: "{{ users }}"
+  become: true
+  tags: users
+
+- name: create users pubkey files
+  authorized_key:
+    user: "{{ item.user }}"
+    state: "{{ item.state }}"
+    key: "{{ item.key }}"
+  with_items: "{{ users }}"
+  when: item.key is defined
+  become: true
+  tags: users
+
+- name: create sudoer files
+  lineinfile:
+    path: "/etc/sudoers.d/user_{{ item.user }}"
+    line: "{{ item.user }} {{ item.cmd }}"
+    state: "{{ item.state }}"
+    mode: 0440
+    create: yes
+    validate: 'visudo -cf %s'
+  with_items:  "{{ users }}"
+  when: item.sudo
+  become: true
+  tags: users
+
+- name: remove sudoer files
+  file:
+    path: '/etc/sudoers.d/user_{{ item.user }}'
+    state: absent
+  with_items: "{{ users }}"
+  when: item.state == 'absent'
+  become: true
+  tags: users
+
+- name: remove old homes
+  file:
+    path: '/home/{{ item.user }}'
+    state: absent
+  with_items: "{{ users }}"
+  when: item.state == 'absent'
+  become: true
+  tags: users
